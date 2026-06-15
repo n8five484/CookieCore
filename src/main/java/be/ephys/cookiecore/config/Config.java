@@ -1,6 +1,6 @@
 package be.ephys.cookiecore.config;
 
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.config.ModConfig;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -34,7 +34,7 @@ public @interface Config {
   @interface StringListDefault {
     /**
      * While this must be a String[] due to annotation restrictions,
-     * the field type must be `ForgeConfigSpec.ConfigValue<List<String>>`
+     * the field type must be `ModConfigSpec.ConfigValue<List<String>>`
      */
     String[] value();
   }

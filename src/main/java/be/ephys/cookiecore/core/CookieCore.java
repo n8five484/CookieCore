@@ -1,6 +1,8 @@
 package be.ephys.cookiecore.core;
 
 import be.ephys.cookiecore.config.ConfigSynchronizer;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.level.GameRules;
@@ -9,35 +11,37 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.FlatLevelSource;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+// import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.neoforge.registries.DeferredRegister;
+// import net.minecraftforge.registries.ForgeRegistries;
+// import net.minecraftforge.registries.RegistryObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 @Mod(CookieCore.MODID)
-@Mod.EventBusSubscriber(modid = CookieCore.MODID)
+@EventBusSubscriber(modid = CookieCore.MODID)
 public class CookieCore {
   public static final String MODID = "cookiecore";
 
   private static final Logger logger = LogManager.getLogger(MODID);
 
   // TODO Move to Fundamental, as well as banner
-  public static DeferredRegister<PaintingVariant> PAINTING_TYPES = DeferredRegister.create(ForgeRegistries.PAINTING_VARIANTS, CookieCore.MODID);
-  public static RegistryObject<PaintingVariant> PAINTING_ZEN = PAINTING_TYPES.register("zen", () -> new PaintingVariant(16, 32));
+  public static DeferredRegister<PaintingVariant> PAINTING_TYPES = DeferredRegister.create(Registries.PAINTING_VARIANT, CookieCore.MODID);
+  public static Supplier<PaintingVariant> PAINTING_ZEN = PAINTING_TYPES.register("zen", () -> new PaintingVariant(16, 32, ResourceLocation.fromNamespaceAndPath(MODID, "zen")));
 
-  public CookieCore() {
+  public CookieCore(IEventBus modBus) {
     ConfigSynchronizer.synchronizeConfig();
 
-    IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+    // IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 
     PAINTING_TYPES.register(modBus);
   }
