@@ -12,11 +12,11 @@ Then in any class, you can declare static configuration fields:
 class MyFeature {
   @Config(name = "myfeature.enabled", description = "Enable 'MyFeature'")
   @Config.BooleanDefault(value = true)
-  public static ForgeConfigSpec.BooleanValue enabled;
+  public static ModConfigSpec.BooleanValue enabled;
 }
 ```
 
-Fields annotated with `@Config` + `@Config.<type>Default` will be set to an instance of `ForgeConfigSpec.ConfigValue` that you can use.
+Fields annotated with `@Config` + `@Config.<type>Default` will be set to an instance of `ModConfigSpec.ConfigValue` that you can use.
 
 One of the `@Config.<type>Default` annotations *must* be specified.
 
@@ -28,20 +28,20 @@ One of the `@Config.<type>Default` annotations *must* be specified.
 class MyFeature {
   @Config(name = "namespace.subnamespace.key")
   @Config.StringDefault("default value")
-  public static ForgeConfigSpec.ConfigValue<String> myConfigValue;
+  public static ModConfigSpec.ConfigValue<String> myConfigValue;
 }
 ```
 
 **string list:**
 
 *important*: Due to limitations in both the TOML parser, and Java annotations, the `StringListDefault` accepts an ARRAY of strings,
-    but the `ForgeConfigSpec.ConfigValue<>` must use a `List` as its generic!
+    but the `ModConfigSpec.ConfigValue<>` must use a `List` as its generic!
 
 ```java
 class MyFeature {
   @Config(name = "namespace.subnamespace.key")
   @Config.StringListDefault({"value1", "value2"})
-  public static ForgeConfigSpec.ConfigValue<List<String>> myConfigValue;
+  public static ModConfigSpec.ConfigValue<List<String>> myConfigValue;
 }
 ```
 
@@ -51,7 +51,7 @@ class MyFeature {
 class MyFeature {
   @Config(name = "myfeature.enabled", description = "Enable 'MyFeature'")
   @Config.BooleanDefault(value = true)
-  public static ForgeConfigSpec.BooleanValue enabled;
+  public static ModConfigSpec.BooleanValue enabled;
 }
 ```
 
@@ -61,7 +61,7 @@ class MyFeature {
 class MyFeature {
   @Config(name = "range_computation.base_range", description = "What is the beacon base range?")
   @Config.IntDefault(10)
-  public static ForgeConfigSpec.IntValue baseRange;
+  public static ModConfigSpec.IntValue baseRange;
 }
 ```
 
@@ -71,7 +71,7 @@ class MyFeature {
 class MyFeature {
   @Config(name = "range_computation.base_range", description = "What is the beacon base range?")
   @Config.LongDefault(10)
-  public static ForgeConfigSpec.LongValue baseRange;
+  public static ModConfigSpec.LongValue baseRange;
 }
 ```
 
@@ -81,7 +81,7 @@ class MyFeature {
 class MyFeature {
   @Config(name = "range_computation.base_range", description = "What is the beacon base range?")
   @Config.DoubleDefault(10.5)
-  public static ForgeConfigSpec.DoubleValue baseRange;
+  public static ModConfigSpec.DoubleValue baseRange;
 }
 ```
 
@@ -92,7 +92,7 @@ class MyFeature {
   @Config(name = "range_computation.vertical_range_type")
   @Config.EnumDefault(value = "FullHeight", enumType = BeaconVerticalRangeType.class)
   // BeaconVerticalRangeType is an enum
-  public static ForgeConfigSpec.EnumValue<BeaconVerticalRangeType> verticalRangeType;
+  public static ModConfigSpec.EnumValue<BeaconVerticalRangeType> verticalRangeType;
 }
 ```
 
@@ -102,10 +102,10 @@ If you need to build part of the config object yourself, you can use `@OnBuildCo
 
 ```java
 class MyFeature {
-  public static ForgeConfigSpec.IntValue configValue;
+  public static ModConfigSpec.IntValue configValue;
   
   @OnBuildConfig()
-  public static onBuildConfig(ForgeConfigSpec.Builder rootBuilder) {
+  public static onBuildConfig(ModConfigSpec.Builder rootBuilder) {
     configValue = rootBuilder.defineInRange("my_config_value", 5, 0, 10);
   }
 }

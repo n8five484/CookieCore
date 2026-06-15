@@ -7,14 +7,6 @@ import net.minecraft.world.item.ItemStack;
 
 public final class NBTHelper {
 
-  public static CompoundTag getNBT(ItemStack stack) {
-    if (!stack.hasTag()) {
-      stack.setTag(new CompoundTag());
-    }
-
-    return stack.getTag();
-  }
-
   public static void genericWrite(CompoundTag tag, String fieldName, Object data) {
 
     if (data == null) {

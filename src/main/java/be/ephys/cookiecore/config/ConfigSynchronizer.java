@@ -1,17 +1,17 @@
 package be.ephys.cookiecore.config;
 
 import be.ephys.cookiecore.core.CookieCore;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.loading.moddiscovery.ModAnnotation;
-import net.minecraftforge.forgespi.language.IModFileInfo;
-import net.minecraftforge.forgespi.language.IModInfo;
-import net.minecraftforge.forgespi.language.ModFileScanData;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.modscan.ModAnnotation;
+import net.neoforged.neoforgespi.language.IModFileInfo;
+import net.neoforged.neoforgespi.language.IModInfo;
+import net.neoforged.neoforgespi.language.ModFileScanData;
 import org.apache.commons.lang3.tuple.Pair;
 import org.objectweb.asm.Type;
 
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 /**
  * TODO support for lists
- * TODO support fields that are not of type ForgeConfigSpec.ConfigValue
+ * TODO support fields that are not of type ModConfigSpec.ConfigValue
  * - use type & value to generate data & default value
  * - directly put back the proper value
  * TODO listeners for config changes
@@ -37,7 +37,7 @@ public final class ConfigSynchronizer {
   private static final Type AT_ON_BUILD_CONFIG_TYPE = Type.getType(Config.OnBuildConfig.class);
   private static final Type ONLY_IN_TYPE = Type.getType(OnlyIn.class);
 
-  public static Map<ModConfig.Type, Pair<BuiltConfig, ForgeConfigSpec>> synchronizeConfig() {
+  public static Map<ModConfig.Type, Pair<BuiltConfig, ModConfigSpec>> synchronizeConfig() {
     ModLoadingContext modLoadingContext = ModLoadingContext.get();
     String modId = modLoadingContext.getActiveContainer().getModId();
 
@@ -93,7 +93,7 @@ public final class ConfigSynchronizer {
       }
 
       ModAnnotation.EnumHolder distEnumHolder = (ModAnnotation.EnumHolder) annotationData.annotationData().get("value");
-      classDists.put(annotationData.clazz(), Dist.valueOf(distEnumHolder.getValue()));
+      classDists.put(annotationData.clazz(), Dist.valueOf(distEnumHolder.value()));
     }
 
     List<ModFileScanData.AnnotationData> configTargets = annotations
@@ -122,7 +122,7 @@ public final class ConfigSynchronizer {
       ModAnnotation.EnumHolder configTypeHolder = (ModAnnotation.EnumHolder) configTarget.annotationData().get("side");
       ModConfig.Type configType = configTypeHolder == null
         ? ModConfig.Type.COMMON
-        : ModConfig.Type.valueOf(configTypeHolder.getValue());
+        : ModConfig.Type.valueOf(configTypeHolder.value());
 
       if (configType == ModConfig.Type.SERVER) {
         serverConfigTargets.add(configTarget);
@@ -137,7 +137,7 @@ public final class ConfigSynchronizer {
       commonConfigTargets.add(configTarget);
     }
 
-    Map<ModConfig.Type, Pair<BuiltConfig, ForgeConfigSpec>> specPairMap = new HashMap<>();
+    Map<ModConfig.Type, Pair<BuiltConfig, ModConfigSpec>> specPairMap = new HashMap<>();
 
     if (commonConfigTargets.size() > 0) {
       specPairMap.put(ModConfig.Type.COMMON, buildAndRegisterConfig(modId, requiresExplicitModId, ModConfig.Type.COMMON, commonConfigTargets));
@@ -154,21 +154,21 @@ public final class ConfigSynchronizer {
     return specPairMap;
   }
 
-  private static Pair<BuiltConfig, ForgeConfigSpec> buildAndRegisterConfig(
+  private static Pair<BuiltConfig, ModConfigSpec> buildAndRegisterConfig(
     String modId,
     boolean requiresExplicitModId,
     ModConfig.Type configType,
     List<ModFileScanData.AnnotationData> configFields
   ) {
 
-    Pair<BuiltConfig, ForgeConfigSpec> configPair = BuiltConfig.build(modId, configFields, requiresExplicitModId);
+    Pair<BuiltConfig, ModConfigSpec> configPair = BuiltConfig.build(modId, configFields, requiresExplicitModId);
 
-    ModLoadingContext.get().registerConfig(configType, configPair.getRight());
+    ModLoadingContext.get().getActiveContainer().registerConfig(configType, configPair.getRight());
 
     return configPair;
   }
 
-  private static <E extends Enum<E>> ForgeConfigSpec.ConfigValue<?> defineConfigValue(ForgeConfigSpec.Builder builder, String name, Field field) {
+  private static <E extends Enum<E>> ModConfigSpec.ConfigValue<?> defineConfigValue(ModConfigSpec.Builder builder, String name, Field field) {
     {
       Config.StringDefault annotationString = field.getAnnotation(Config.StringDefault.class);
       if (annotationString != null) {
@@ -252,11 +252,11 @@ public final class ConfigSynchronizer {
     // TODO: check generic type
 
     if (
-      !ForgeConfigSpec.ConfigValue.class.isAssignableFrom(field.getType())
+      !ModConfigSpec.ConfigValue.class.isAssignableFrom(field.getType())
     ) {
       throw new Error("[CookieCore Config] Field "
         + field.getDeclaringClass().getName() + "." + field.getName()
-        + " must be of type ForgeConfigSpec.ConfigValue<" + genericType.getName() + "> (got " + field.getType().getName() + ")"
+        + " must be of type ModConfigSpec.ConfigValue<" + genericType.getName() + "> (got " + field.getType().getName() + ")"
       );
     }
   }
@@ -284,7 +284,7 @@ public final class ConfigSynchronizer {
     private final String modId;
     private final boolean requiresExplicitModId;
 
-    private final Map<String, ForgeConfigSpec.ConfigValue<?>> configValues = new HashMap<>();
+    private final Map<String, ModConfigSpec.ConfigValue<?>> configValues = new HashMap<>();
 
     public BuiltConfig(String modId, List<ModFileScanData.AnnotationData> configFields, boolean requiresExplicitModId) {
       this.configFields = configFields;
@@ -292,16 +292,16 @@ public final class ConfigSynchronizer {
       this.requiresExplicitModId = requiresExplicitModId;
     }
 
-    public static Pair<BuiltConfig, ForgeConfigSpec> build(String modId, List<ModFileScanData.AnnotationData> configFields, boolean requiresExplicitModId) {
+    public static Pair<BuiltConfig, ModConfigSpec> build(String modId, List<ModFileScanData.AnnotationData> configFields, boolean requiresExplicitModId) {
       BuiltConfig specBuilder = new BuiltConfig(modId, configFields, requiresExplicitModId);
 
-      ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
-      final Pair<BuiltConfig, ForgeConfigSpec> specPair = builder.configure(specBuilder::build);
+      ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+      final Pair<BuiltConfig, ModConfigSpec> specPair = builder.configure(specBuilder::build);
 
       return specPair;
     }
 
-    public ForgeConfigSpec.ConfigValue<?> getConfigValue(String configKey) {
+    public ModConfigSpec.ConfigValue<?> getConfigValue(String configKey) {
       return configValues.get(configKey);
     }
 
@@ -314,16 +314,16 @@ public final class ConfigSynchronizer {
       return signature.substring(0, index);
     }
 
-    private void callOnBuildConfigHook(final ModFileScanData.AnnotationData annotation, final ForgeConfigSpec.Builder rootBuilder) {
+    private void callOnBuildConfigHook(final ModFileScanData.AnnotationData annotation, final ModConfigSpec.Builder rootBuilder) {
       Method method;
       try {
         Class<?> clazz = Class.forName(annotation.clazz().getClassName());
         String methodName = getMethodNameFromSignature(annotation.memberName());
-        method = clazz.getMethod(methodName, ForgeConfigSpec.Builder.class);
+        method = clazz.getMethod(methodName, ModConfigSpec.Builder.class);
       } catch(NoSuchMethodException e) {
         throw new RuntimeException("Failed to call OnBuildConfig hook for mod " + modId
           + ". Is " + annotation.clazz().getClassName() + "." + annotation.memberName()
-          + " a static method and does it accept a single Parameter of type ForgeConfigSpec.Builder?", e);
+          + " a static method and does it accept a single Parameter of type ModConfigSpec.Builder?", e);
       } catch (ClassNotFoundException e) {
         throw new RuntimeException("Failed to load config for mod " + modId, e);
       }
@@ -341,7 +341,7 @@ public final class ConfigSynchronizer {
       }
     }
 
-    private BuiltConfig build(final ForgeConfigSpec.Builder rootBuilder) {
+    private BuiltConfig build(final ModConfigSpec.Builder rootBuilder) {
       for (ModFileScanData.AnnotationData annotation : configFields) {
 
         if (annotation.annotationType().equals(AT_ON_BUILD_CONFIG_TYPE)) {
@@ -357,11 +357,11 @@ public final class ConfigSynchronizer {
           throw new RuntimeException("Failed to load config for mod " + modId, e);
         }
 
-        // java.lang.RuntimeException: Failed to load config: @Config can only be used on fields of type ForgeConfigSpec.ConfigValue.
+        // java.lang.RuntimeException: Failed to load config: @Config can only be used on fields of type ModConfigSpec.ConfigValue.
         // Got net.minecraftforge.common.ForgeConfigSpec$BooleanValue
         // (field be.ephys.cookiecore.core.CookieCore enableTerracottaWorldPreset)
-        if (!ForgeConfigSpec.ConfigValue.class.isAssignableFrom(field.getType())) {
-          throw new RuntimeException("Failed to load config: @Config can only be used on fields of type ForgeConfigSpec.ConfigValue.\n-> Got " + field.getType().getName() + ".\n-> Field: " + field.getDeclaringClass().getName() + " " + field.getName());
+        if (!ModConfigSpec.ConfigValue.class.isAssignableFrom(field.getType())) {
+          throw new RuntimeException("Failed to load config: @Config can only be used on fields of type ModConfigSpec.ConfigValue.\n-> Got " + field.getType().getName() + ".\n-> Field: " + field.getDeclaringClass().getName() + " " + field.getName());
         }
 
         if (!Modifier.isStatic(field.getModifiers())) {
@@ -383,7 +383,7 @@ public final class ConfigSynchronizer {
           }
         }
 
-        ForgeConfigSpec.Builder builder = rootBuilder
+        ModConfigSpec.Builder builder = rootBuilder
           .comment(configMeta.description());
 
         if (!configMeta.translationKey().isEmpty()) {
@@ -399,7 +399,7 @@ public final class ConfigSynchronizer {
           configKey = field.getName();
         }
 
-        ForgeConfigSpec.ConfigValue<?> configValue = defineConfigValue(builder, configKey, field);
+        ModConfigSpec.ConfigValue<?> configValue = defineConfigValue(builder, configKey, field);
 
         configValues.put(configKey, configValue);
 

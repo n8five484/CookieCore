@@ -16,7 +16,6 @@ public class NbtWriterRegistry {
     registerWriter(Integer.class, new IntegerNbtWriter());
     registerWriter(Boolean.class, new BooleanNbtWriter());
 
-    registerWriter(ItemStack.class, new ItemStackNbtWriter());
     registerWriter(UUID.class, new UuidNbtWriter());
     registerWriter(Class.class, new ClassNbtWriter());
 
