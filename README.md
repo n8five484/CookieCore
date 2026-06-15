@@ -85,7 +85,7 @@ class MyFeature {
 }
 ```
 
-*enum:**
+**enum:**
 
 ```java
 class MyFeature {
